@@ -9,6 +9,7 @@ import sys
 
 # 3rd Party Modules
 import gym
+from filelock import FileLock
 
 # Local Modules
 # Must make sure the GVGAI_GYM is available
@@ -50,19 +51,26 @@ def play(level, player, gvgai_path, max_len=1000):
     return: if the player wins we return 1.0 otherwise -1.0 is returned. 
     """
 
+    # Check if level meets min req
+    for s in ['A','g','+']:  # must be one avitar, goal, and key
+        if level.count(s) != 1:
+            return -1.0
 
     cur = 4
     board = 'gvgai-zelda-lvl{}-v0'.format(cur)
 
-    f = open(Path(gvgai_path)/'gym_gvgai/envs/games/zelda_v0/zelda_lvl{}.txt'.format(cur), 'w')
-    f.write(level)
-    f.close()
+    root_path = Path(gvgai_path)
 
+    env = None
+    state = None
+
+    with FileLock(root_path/'gym_gvgai/envs/games/zelda_v0/zelda_lvl{}.lock'):
+        with open(root_path/'gym_gvgai/envs/games/zelda_v0/zelda_lvl{}.txt'.format(cur), 'w') as f:
+            f.write(level)
     # print(board in [env.id for env in gym.envs.registry.all() if env.id.startswith('gvgai')])
-
     env = gym.make(board)
-
     state = env.reset()
+
     sum_score = 0
     win = False
     for i in range(max_len):
