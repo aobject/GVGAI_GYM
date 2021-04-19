@@ -204,3 +204,7 @@ fabric.properties
 #####
 
 .DS_Store
+
+*.lock
+
+*.vscode
